@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>شيك ليست القدرات</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--text:#1d2a24;--muted:#6b7770;--accent:#1f7a5a;--line:#e3e1da;--rev:#fff6e0;--exam:#fde8e4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14191a;--card:#1d2527;--text:#e8eeea;--muted:#93a39a;--accent:#4cc79a;--line:#2d3a3d;--rev:#2b2718;--exam:#3a2321}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14191a;--card:#1d2527;--text:#e8eeea;--muted:#93a39a;--accent:#4cc79a;--line:#2d3a3d;--rev:#2b2718;--exam:#3a2321}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Arial,sans-serif;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 2px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.prog{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;z-index:5}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.pt{font-size:13px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between}
+.wk{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden}
+.wk h2{font-size:16px;margin:0;padding:10px 14px;border-bottom:1px solid var(--line)}
+.day{padding:8px 14px;border-bottom:1px solid var(--line)}
+.day:last-child{border-bottom:0}
+.day.rev{background:var(--rev)}
+.dn{font-weight:600;font-size:14px;margin-bottom:2px}
+label{display:flex;gap:10px;align-items:flex-start;padding:4px 0;font-size:15px;cursor:pointer}
+input[type=checkbox]{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+input:checked+span{color:var(--muted);text-decoration:line-through}
+.exam{background:var(--exam);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;font-weight:600;text-align:center}
+button{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>شيك ليست القدرات</h1>
+<p class="sub">من الأحد 25 أكتوبر إلى الخميس 17 ديسمبر · لفظي 150 قسم · كمي 1930 سؤال</p>
+<div class="prog"><div class="bar"><i id="b"></i></div><div class="pt"><span id="c">0 من 0</span><span id="p">0%</span></div></div>
+<div id="app"></div>
+<button id="reset">مسح كل العلامات</button>
+</div>
+<script>
+var D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+var M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function dt(i){var d=new Date(2026,9,25+i);return D[d.getDay()]+' '+d.getDate()+' '+M[d.getMonth()];}
+var items=0,h='';
+function cb(id,t){items++;return '<label><input type="checkbox" data-id="'+id+'"><span>'+t+'</span></label>';}
+function day(i,body,rev){return '<div class="day'+(rev?' rev':'')+'"><div class="dn">'+dt(i)+'</div>'+body+'</div>';}
+for(var w=0;w<7;w++){
+ h+='<section class="wk"><h2>الأسبوع '+(w+1)+'</h2>';
+ var nd=w<6?5:4;
+ for(var d=0;d<nd;d++){
+  var i=w*7+d,id='d'+i,b='';
+  var q1=w*285+d*55+1,q2=q1+54;
+  if(w<6){var v1=w*25+d*5+1;b+=cb(id+'v','لفظي: قسم '+v1+' إلى '+(v1+4));}
+  b+=cb(id+'q','كمي: سؤال '+q1+' إلى '+q2);
+  h+=day(i,b,false);
+ }
+ if(w<6){
+  var f=w*7+5,s=w*7+6,n1=w*285+276;
+  h+=day(f,cb('d'+f+'r','مراجعة أخطاء اللفظي وإعادة الأقسام الضعيفة'),true);
+  h+=day(s,cb('d'+s+'r','مراجعة أخطاء الكمي والقوانين')+cb('d'+s+'n','كمي جديد: سؤال '+n1+' إلى '+(n1+9)),true);
+ }
+ h+='</section>';
+}
+var F=['مراجعة اللفظي كامل: التناظر، إكمال الجمل، الخطأ السياقي، المفردة الشاذة، الاستيعاب','مراجعة اللفظي: الأقسام اللي أخطاؤك فيها كثيرة','مراجعة الكمي: القوانين','مراجعة الكمي: إعادة حل الأسئلة اللي غلطت فيها','اختبار تجريبي كامل بنفس وقت الاختبار','مراجعة أخطاء الاختبار التجريبي','مراجعة خفيفة ونوم بدري'];
+h+='<section class="wk"><h2>آخر أسبوع: مراجعة فقط</h2>';
+for(var k=0;k<7;k++){h+=day(46+k,cb('f'+k,F[k]),true);}
+h+='</section><div class="exam">'+dt(53)+' · يوم الاختبار، بالتوفيق</div>';
+document.getElementById('app').innerHTML=h;
+var boxes=document.querySelectorAll('input[type=checkbox]'),st={};
+try{st=JSON.parse(localStorage.getItem('qd')||'{}')||{};}catch(e){st={};}
+function upd(){var n=0;boxes.forEach(function(x){if(x.checked)n++;});
+ var p=Math.round(n/boxes.length*100);
+ document.getElementById('b').style.width=p+'%';
+ document.getElementById('c').textContent=n+' من '+boxes.length;
+ document.getElementById('p').textContent=p+'%';}
+function save(){try{localStorage.setItem('qd',JSON.stringify(st));}catch(e){}}
+boxes.forEach(function(x){
+ x.checked=!!st[x.dataset.id];
+ x.addEventListener('change',function(){if(x.checked)st[x.dataset.id]=1;else delete st[x.dataset.id];save();upd();});
+});
+document.getElementById('reset').addEventListener('click',function(){if(confirm('تبي تمسح كل العلامات؟')){st={};save();boxes.forEach(function(x){x.checked=false;});upd();}});
+upd();
+</script>
+</body>
+</html>
