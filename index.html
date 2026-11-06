@@ -24,11 +24,17 @@ h1{font-size:22px;margin:8px 0 2px}
 .day:last-child{border-bottom:0}
 .day.rev{background:var(--rev)}
 .dn{font-weight:600;font-size:14px;margin-bottom:2px}
-label{display:flex;gap:10px;align-items:flex-start;padding:4px 0;font-size:15px;cursor:pointer}
-input[type=checkbox]{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+.task-item{margin:4px 0}
+.task-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+label{display:flex;gap:10px;align-items:center;font-size:15px;cursor:pointer;flex:1}
+input[type=checkbox]{width:20px;height:20px;margin:0;accent-color:var(--accent);flex:none}
 input:checked+span{color:var(--muted);text-decoration:line-through}
+.note-btn{background:none;border:none;padding:2px 6px;margin:0;font-size:16px;cursor:pointer;opacity:0.6;transition:opacity 0.2s}
+.note-btn:hover, .note-btn.has-note{opacity:1}
+.note-box{display:none;width:100%;margin-top:6px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;resize:vertical}
+.note-box.open{display:block}
 .exam{background:var(--exam);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;font-weight:600;text-align:center}
-button{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;margin:16px 0}
+button#reset{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;margin:16px 0;cursor:pointer}
 </style>
 </head>
 <body>
@@ -37,14 +43,23 @@ button{font:inherit;background:none;border:1px solid var(--line);color:var(--mut
 <p class="sub">من الأحد 25 أكتوبر إلى الخميس 17 ديسمبر · لفظي 150 قسم · كمي 1930 سؤال</p>
 <div class="prog"><div class="bar"><i id="b"></i></div><div class="pt"><span id="c">0 من 0</span><span id="p">0%</span></div></div>
 <div id="app"></div>
-<button id="reset">مسح كل العلامات</button>
+<button id="reset">مسح كل العلامات والملاحظات</button>
 </div>
 <script>
 var D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 var M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function dt(i){var d=new Date(2026,9,25+i);return D[d.getDay()]+' '+d.getDate()+' '+M[d.getMonth()];}
 var items=0,h='';
-function cb(id,t){items++;return '<label><input type="checkbox" data-id="'+id+'"><span>'+t+'</span></label>';}
+function cb(id,t){
+  items++;
+  return '<div class="task-item">' +
+    '<div class="task-row">' +
+      '<label><input type="checkbox" data-id="'+id+'"><span>'+t+'</span></label>' +
+      '<button class="note-btn" data-id="'+id+'" title="إضافة ملاحظة">📝</button>' +
+    '</div>' +
+    '<textarea class="note-box" id="note-'+id+'" data-id="'+id+'" placeholder="اكتب ملاحظاتك هنا..."></textarea>' +
+  '</div>';
+}
 function day(i,body,rev){return '<div class="day'+(rev?' rev':'')+'"><div class="dn">'+dt(i)+'</div>'+body+'</div>';}
 for(var w=0;w<7;w++){
  h+='<section class="wk"><h2>الأسبوع '+(w+1)+'</h2>';
@@ -68,19 +83,56 @@ h+='<section class="wk"><h2>آخر أسبوع: مراجعة فقط</h2>';
 for(var k=0;k<7;k++){h+=day(46+k,cb('f'+k,F[k]),true);}
 h+='</section><div class="exam">'+dt(53)+' · يوم الاختبار، بالتوفيق</div>';
 document.getElementById('app').innerHTML=h;
-var boxes=document.querySelectorAll('input[type=checkbox]'),st={};
+
+var boxes=document.querySelectorAll('input[type=checkbox]'),st={},notes={};
 try{st=JSON.parse(localStorage.getItem('qd')||'{}')||{};}catch(e){st={};}
+try{notes=JSON.parse(localStorage.getItem('qd_notes')||'{}')||{};}catch(e){notes={};}
+
 function upd(){var n=0;boxes.forEach(function(x){if(x.checked)n++;});
  var p=Math.round(n/boxes.length*100);
  document.getElementById('b').style.width=p+'%';
  document.getElementById('c').textContent=n+' من '+boxes.length;
  document.getElementById('p').textContent=p+'%';}
 function save(){try{localStorage.setItem('qd',JSON.stringify(st));}catch(e){}}
+function saveNotes(){try{localStorage.setItem('qd_notes',JSON.stringify(notes));}catch(e){}}
+
 boxes.forEach(function(x){
  x.checked=!!st[x.dataset.id];
  x.addEventListener('change',function(){if(x.checked)st[x.dataset.id]=1;else delete st[x.dataset.id];save();upd();});
 });
-document.getElementById('reset').addEventListener('click',function(){if(confirm('تبي تمسح كل العلامات؟')){st={};save();boxes.forEach(function(x){x.checked=false;});upd();}});
+
+document.querySelectorAll('.note-btn').forEach(function(btn){
+ var id=btn.dataset.id;
+ var noteBox=document.getElementById('note-'+id);
+ if(notes[id]){
+   noteBox.value=notes[id];
+   btn.classList.add('has-note');
+ }
+ btn.addEventListener('click',function(){
+   noteBox.classList.toggle('open');
+ });
+ noteBox.addEventListener('input',function(){
+   var val=noteBox.value.trim();
+   if(val){
+     notes[id]=val;
+     btn.classList.add('has-note');
+   }else{
+     delete notes[id];
+     btn.classList.remove('has-note');
+   }
+   saveNotes();
+ });
+});
+
+document.getElementById('reset').addEventListener('click',function(){
+ if(confirm('تبي تمسح كل العلامات والملاحظات؟')){
+  st={};notes={};save();saveNotes();
+  boxes.forEach(function(x){x.checked=false;});
+  document.querySelectorAll('.note-box').forEach(function(nb){nb.value='';nb.classList.remove('open');});
+  document.querySelectorAll('.note-btn').forEach(function(btn){btn.classList.remove('has-note');});
+  upd();
+ }
+});
 upd();
 </script>
 </body>
